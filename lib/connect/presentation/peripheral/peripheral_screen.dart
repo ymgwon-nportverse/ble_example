@@ -8,8 +8,12 @@ import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../service/utils.dart';
+
 class PeripheralScreen extends StatefulWidget {
-  const PeripheralScreen({super.key});
+  const PeripheralScreen({super.key, required this.deviceInfo});
+
+  final String deviceInfo;
 
   @override
   State<PeripheralScreen> createState() => _PeripheralScreenState();
@@ -48,9 +52,10 @@ class _PeripheralScreenState extends State<PeripheralScreen>
         final id = eventArgs.id;
         final offset = eventArgs.offset;
         final log = Log(
-          LogType.read,
-          Uint8List.fromList([]),
-          'central: ${central.uuid}; characteristic: ${characteristic.uuid}; id: $id; offset: $offset',
+          type: LogType.read,
+          value: Uint8List.fromList([]),
+          detail:
+              'central: ${central.uuid}; characteristic: ${characteristic.uuid}; id: $id; offset: $offset',
         );
         _logs.value = [
           ..._logs.value,
@@ -80,9 +85,10 @@ class _PeripheralScreenState extends State<PeripheralScreen>
         final offset = eventArgs.offset;
         final value = eventArgs.value;
         final log = Log(
-          LogType.write,
-          value,
-          'central: ${central.uuid}; characteristic: ${characteristic.uuid}; id: $id; offset: $offset',
+          type: LogType.write,
+          value: value,
+          detail:
+              'central: ${central.uuid}; characteristic: ${characteristic.uuid}; id: $id; offset: $offset',
         );
         _logs.value = [
           ..._logs.value,
@@ -105,10 +111,10 @@ class _PeripheralScreenState extends State<PeripheralScreen>
         final characteristic = eventArgs.characteristic;
         final state = eventArgs.state;
         final log = Log(
-          LogType.write,
-          Uint8List.fromList([]),
-          'central: ${central.uuid}; characteristic: ${characteristic.uuid}; state: $state',
-        );
+            type: LogType.write,
+            value: Uint8List.fromList([]),
+            detail:
+                'central: ${central.uuid}; characteristic: ${characteristic.uuid}; state: $state');
         _logs.value = [
           ..._logs.value,
           log,
@@ -199,7 +205,7 @@ class _PeripheralScreenState extends State<PeripheralScreen>
     );
     await peripheralManager.addService(service);
     final advertisement = Advertisement(
-      name: 'hello',
+      name: widget.deviceInfo,
       manufacturerSpecificData: ManufacturerSpecificData(
         id: 0x2e19,
         data: Uint8List.fromList([0x01, 0x02, 0x03]),
@@ -238,11 +244,14 @@ class _PeripheralScreenState extends State<PeripheralScreen>
                 typeColor = Colors.black;
             }
             final time = DateFormat.Hms().format(log.time);
-            final value = log.value;
-            final message = '${log.detail}; ${hex.encode(value)}';
+            //      final value = log.value;
+            final value = type == LogType.write.name
+                ? Utils.typeConverter(log.value)
+                : hex.encode(log.value);
+            final message = '${log.detail}; $value '; //hex.encode(value)
             return Text.rich(
               TextSpan(
-                text: '[$type:${value.length}]',
+                text: '[$type: current write length [${value.length}]',
                 children: [
                   TextSpan(
                     text: ' $time: ',

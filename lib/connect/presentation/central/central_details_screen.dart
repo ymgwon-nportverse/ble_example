@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:ble_test/connect/presentation/rssi_widget.dart';
 import 'package:ble_test/core/presentation/view_models/log.dart';
 import 'package:ble_test/main.dart';
+import 'package:ble_test/service/utils.dart';
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +77,7 @@ class _CentralDetailsScreenState extends State<CentralDetailsScreen> {
           return;
         }
         const type = LogType.notify;
-        final log = Log(type, eventArgs.value);
+        final log = Log(type: type, value: eventArgs.value);
         logs.value = [
           ...logs.value,
           log,
@@ -242,10 +243,12 @@ class _CentralDetailsScreenState extends State<CentralDetailsScreen> {
                     }
                     final time = DateFormat.Hms().format(log.time);
                     final value = log.value;
-                    final message = hex.encode(value);
+                    final message = type == LogType.write.name
+                        ? Utils.typeConverter(log.value)
+                        : hex.encode(value);
                     return Text.rich(
                       TextSpan(
-                        text: '[$type:${value.length}]',
+                        text: '[$type: current write length [${value.length}]',
                         children: [
                           TextSpan(
                             text: ' $time: ',
@@ -331,7 +334,7 @@ class _CentralDetailsScreenState extends State<CentralDetailsScreen> {
                   return ValueListenableBuilder(
                     valueListenable: maximumWriteLength,
                     builder: (context, maximumWriteLength, child) {
-                      return Text('$maximumWriteLength');
+                      return Text('max: $maximumWriteLength');
                     },
                   );
                 },
@@ -403,7 +406,7 @@ class _CentralDetailsScreenState extends State<CentralDetailsScreen> {
                                   final value = await centralManager
                                       .readCharacteristic(characteristic);
                                   const type = LogType.read;
-                                  final log = Log(type, value);
+                                  final log = Log(type: type, value: value);
                                   logs.value = [...logs.value, log];
                                 }
                               : null,
@@ -421,7 +424,8 @@ class _CentralDetailsScreenState extends State<CentralDetailsScreen> {
                                     value: value,
                                     type: type,
                                   );
-                                  final log = Log(LogType.write, value);
+                                  final log =
+                                      Log(type: LogType.write, value: value);
                                   logs.value = [...logs.value, log];
                                 }
                               : null,
