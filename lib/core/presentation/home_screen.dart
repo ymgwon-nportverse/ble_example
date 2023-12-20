@@ -3,7 +3,9 @@ import 'package:ble_test/connect/presentation/peripheral/peripheral_screen.dart'
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.deviceInfo});
+
+  final String deviceInfo;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,12 +23,24 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: buildBody(context),
+      appBar: AppBar(
+        title: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          height: 50,
+          child: Column(
+            children: [
+              Text('내 디바이스 : ${widget.deviceInfo}'),
+              const Divider(),
+            ],
+          ),
+        ),
+      ),
+      body: buildBody(context, widget.deviceInfo),
       bottomNavigationBar: buildBottomNavigationBar(context),
     );
   }
 
-  Widget buildBody(BuildContext context) {
+  Widget buildBody(BuildContext context, String deviceInfo) {
     return PageView.builder(
       controller: controller,
       itemBuilder: (context, i) {
@@ -34,7 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
           case 0:
             return const CentralScreen();
           case 1:
-            return const PeripheralScreen();
+            return PeripheralScreen(
+              deviceInfo: deviceInfo,
+            );
           default:
             throw ArgumentError.value(i);
         }

@@ -4,7 +4,9 @@ import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
 import 'package:flutter/material.dart';
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  const MainApp({super.key, required this.deviceInfo});
+
+  final String deviceInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +14,9 @@ class MainApp extends StatelessWidget {
       theme: ThemeData.light(
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: HomeScreen(
+        deviceInfo: deviceInfo,
+      ),
       routes: {
         'peripheral': (context) {
           final route = ModalRoute.of(context);
